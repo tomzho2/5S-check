@@ -739,7 +739,7 @@
         // ==================== Supabase 配置 ====================
         const SUPABASE_URL = 'https://mvpwmvueotebtlotjlhc.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12cHdtdnVlb3RlYnRsb3RqbGhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMzU0OTQsImV4cCI6MjA5NjYxMTQ5NH0.uSreTRzG7pvrto081KTP04oOXBjy790nJojjSFSS7Ek';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ==================== 全局状态 ====================
         let currentUser = null;
@@ -813,11 +813,11 @@
 
         // ==================== 数据加载 ====================
         async function loadDepts() {
-            const { data, error } = await supabase.from('departments').select('*').order('id');
+            const { data, error } = await sb.from('departments').select('*').order('id');
             if (!error) deptList = data;
         }
         async function loadUsers() {
-            const { data, error } = await supabase.from('users').select('*').order('id');
+            const { data, error } = await sb.from('users').select('*').order('id');
             if (error) return;
             userList = data.map(u => ({
                 id: u.id, account: u.username, name: u.real_name, pwd: u.password,
@@ -827,7 +827,7 @@
             }));
         }
         async function loadRecords(duty, status) {
-            let q = supabase.from('check_records').select('*').order('created_at', { ascending: false });
+            let q = sb.from('check_records').select('*').order('created_at', { ascending: false });
             if (status) q = q.eq('status', getStatusCode(status));
             const { data, error } = await q;
             if (error) return;
@@ -990,7 +990,7 @@
             if (t.classList.contains('del-dept-btn')) {
                 if (!confirm('确定删除该部门？')) return;
                 try {
-                    await supabase.from('departments').delete().eq('id', t.dataset.id);
+                    await sb.from('departments').delete().eq('id', t.dataset.id);
                     await loadDepts(); renderDeptTable(); renderDeptSelect();
                 } catch (err) { alert(err.message); }
             } else if (t.classList.contains('edit-dept-btn')) {
@@ -1004,7 +1004,7 @@
             const val = $('newDept').value.trim();
             if (!val) return alert('请输入部门名称');
             try {
-                await supabase.from('departments').insert({ name: val });
+                await sb.from('departments').insert({ name: val });
                 $('newDept').value = '';
                 await loadDepts(); renderDeptTable(); renderDeptSelect();
             } catch (err) { alert(err.message); }
@@ -1015,7 +1015,7 @@
             const name = $('editDeptName').value.trim();
             if (!name) return alert('请输入部门名称');
             try {
-                await supabase.from('departments').update({ name }).eq('id', id);
+                await sb.from('departments').update({ name }).eq('id', id);
                 editDeptModal.classList.add('hidden');
                 await loadDepts(); renderDeptTable(); renderDeptSelect();
             } catch (err) { alert(err.message); }
@@ -1065,7 +1065,7 @@
             if (!acc || !pwd) return alert('账号、密码不能为空');
             if (!roles) return alert('请至少选择一个角色');
             try {
-                await supabase.from('users').insert({ username: acc, real_name: name, password: pwd, role: roles, department: dept });
+                await sb.from('users').insert({ username: acc, real_name: name, password: pwd, role: roles, department: dept });
                 newAccount.value = ''; newName.value = '';
                 setCheckedValues('.new-role-cb', ''); setCheckedValues('.new-dept-cb', '');
                 alert('新增人员成功');
@@ -1078,7 +1078,7 @@
             if (t.classList.contains('del-user-btn')) {
                 if (!confirm('确定删除该人员？')) return;
                 try {
-                    await supabase.from('users').delete().eq('id', t.dataset.id);
+                    await sb.from('users').delete().eq('id', t.dataset.id);
                     await loadUsers(); renderUserTable();
                 } catch (err) { alert(err.message); }
             } else if (t.classList.contains('edit-user-btn')) {
@@ -1104,7 +1104,7 @@
             if (!acc || !pwd) return alert('账号、密码不能为空');
             if (!role) return alert('请至少选择一个角色');
             try {
-                await supabase.from('users').update({ username: acc, real_name: name, password: pwd, role, department: dept }).eq('id', id);
+                await sb.from('users').update({ username: acc, real_name: name, password: pwd, role, department: dept }).eq('id', id);
                 editUserModal.classList.add('hidden');
                 alert('人员信息修改成功');
                 await loadUsers(); renderUserTable();
@@ -1116,7 +1116,7 @@
             const pwd = loginPwd.value.trim();
             if (!acc || !pwd) return alert('请输入账号和密码');
             try {
-                const { data, error } = await supabase.from('users').select('*').eq('username', acc).eq('password', pwd).single();
+                const { data, error } = await sb.from('users').select('*').eq('username', acc).eq('password', pwd).single();
                 if (error || !data) return alert('账号或密码错误！\n默认账号：admin/check/duty  密码：123456');
                 currentUser = {
                     id: data.id, account: data.username, name: data.real_name, pwd: data.password,
@@ -1305,7 +1305,7 @@
                 created_by: currentUser ? currentUser.account : ''
             };
             try {
-                const { error } = await supabase.from('check_records').insert(record);
+                const { error } = await sb.from('check_records').insert(record);
                 if (error) throw error;
                 alert('提交成功！');
                 resetCheckForm();
@@ -1451,7 +1451,7 @@
                     const hasPending = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '待确认');
                     const newStatus = hasOngoing ? 0 : (hasPending ? 1 : 2);
                     try {
-                        await supabase.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
+                        await sb.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
                         alert('整改提交成功，等待检查人确认');
                         await loadRecords(filterDuty.value, filterStatus.value);
                         const updated = recordList.find(r => r.id === rid);
@@ -1476,7 +1476,7 @@
                     const allFixed = items.every(d => !d.isError || (d.errorInfo && d.errorInfo.status === '已整改'));
                     const newStatus = allFixed ? 3 : 1;
                     try {
-                        await supabase.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
+                        await sb.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
                         alert('已确认通过');
                         await loadRecords(filterDuty.value, filterStatus.value);
                         const updated = recordList.find(r => r.id === rid);
@@ -1501,7 +1501,7 @@
                     detailItem.errorInfo.status = '进行中';
                     detailItem.errorInfo.rejectReason = reason;
                     try {
-                        await supabase.from('check_records').update({ details: { items }, status: 0 }).eq('id', rid);
+                        await sb.from('check_records').update({ details: { items }, status: 0 }).eq('id', rid);
                         alert('已退回整改');
                         await loadRecords(filterDuty.value, filterStatus.value);
                         const updated = recordList.find(r => r.id === rid);
@@ -1518,7 +1518,7 @@
                     try {
                         const rec = recordList.find(r => r.id === rid);
                         const detail = rec ? (rec.detail && rec.detail.items ? { items: rec.detail.items } : rec.detail) : {};
-                        await supabase.from('check_records').update({ status: 3, details: detail }).eq('id', rid);
+                        await sb.from('check_records').update({ status: 3, details: detail }).eq('id', rid);
                         alert('归档成功');
                         await loadRecords(filterDuty.value, filterStatus.value);
                         const updated = recordList.find(r => r.id === rid);
@@ -1566,7 +1566,7 @@
                     const rid = parseInt(this.dataset.id);
                     if (!confirm('确定删除此记录？此操作不可恢复。')) return;
                     try {
-                        await supabase.from('check_records').delete().eq('id', rid);
+                        await sb.from('check_records').delete().eq('id', rid);
                         alert('删除成功');
                         await renderRecord();
                     } catch (err) { alert(err.message); }
@@ -1597,7 +1597,7 @@
             const pwd = sessionStorage.getItem('5s_pwd');
             if (acc && pwd) {
                 try {
-                    const { data, error } = await supabase.from('users').select('*').eq('username', acc).eq('password', pwd).single();
+                    const { data, error } = await sb.from('users').select('*').eq('username', acc).eq('password', pwd).single();
                     if (!error && data) {
                         currentUser = {
                             id: data.id, account: data.username, name: data.real_name, pwd: data.password,
