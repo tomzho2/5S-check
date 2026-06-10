@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5S现场检查评分管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background-color: #f3f4f6;
+            color: #333;
+            line-height: 1.5;
+        }
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; }
+        .text-red-500 { color: #ef4444; }
+        .text-blue-500 { color: #3b82f6; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .w-full { width: 100%; }
+        .max-w-md { max-width: 28rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-8 { margin-top: 2rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .border { border: 1px solid #e5e7eb; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .bg-white { background-color: white; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .bg-green-600 { background-color: #16a34a; }
+        .bg-gray-500 { background-color: #6b7280; }
+        .bg-red-500 { background-color: #ef4444; }
+        .text-white { color: white; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .cursor-pointer { cursor: pointer; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .hover\:bg-green-700:hover { background-color: #15803d; }
+        .hover\:bg-gray-600:hover { background-color: #4b5563; }
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .login-card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 28rem;
+        }
+        .login-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-bottom: 0.25rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-full {
+            width: 100%;
+        }
+        .login-note {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .header {
+            background-color: #2563eb;
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        .nav-btn.active {
+            background-color: white;
+            color: #2563eb;
+        }
+        .nav-btn:not(.active) {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+            .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+            .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        }
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th, .table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        .table th {
+            background-color: #f9fafb;
+            font-weight: 500;
+        }
+        .score-tip {
+            background-color: #fef3c7;
+            color: #b45309;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+        .img-preview {
+            max-height: 120px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+        }
+        .img-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .error-area {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .error-area.show {
+            display: block;
+        }
+    </style>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- 登录页 -->
+    <div id="loginPage" class="login-page">
+        <div class="login-card">
+            <h2 class="login-title">5S检查系统 - 登录</h2>
+            <div class="form-group">
+                <label class="form-label">账号</label>
+                <input type="text" id="loginAccount" class="form-input" placeholder="请输入账号">
+            </div>
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <input type="password" id="loginPwd" class="form-input" placeholder="请输入密码">
+            </div>
+            <button id="loginBtn" class="btn btn-primary btn-full">登 录</button>
+            <p class="login-note">
+            </p>
+        </div>
+    </div>
+
+    <!-- 主页面 -->
+    <div id="mainPage" class="hidden">
+        <header class="header">
+            <div class="header-container">
+                <h1 class="header-title">5S 现场检查评分管理系统</h1>
+                <div class="nav-buttons">
+                    <button class="nav-btn active" data-page="check">检查录入</button>
+                    <button class="nav-btn" data-page="record">历史记录</button>
+                    <button id="deptManageBtn" class="nav-btn hidden">部门管理</button>
+                    <button id="userManageBtn" class="nav-btn hidden">人员管理</button>
+                    <span id="userInfo" class="text-sm"></span>
+                    <button id="logoutBtn" class="nav-btn bg-red-500">退出</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 人员管理弹窗 -->
+        <div id="userManageModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">人员管理</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="card">
+                    <h4 class="text-sm font-semibold mb-2">新增人员</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
+                        <div>
+                            <label class="form-label">账号</label>
+                            <input type="text" id="newAccount" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">姓名</label>
+                            <input type="text" id="newName" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">密码</label>
+                            <input type="text" id="newPwd" class="form-input" value="123456">
+                        </div>
+                <div class="md:col-span-2">
+                    <label class="form-label">角色（可多选）</label>
+                    <div class="flex gap-4 mt-1" id="newRoleGroup">
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" value="checker" class="new-role-cb"> 检查人</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" value="duty" class="new-role-cb"> 责任人</label>
+                    </div>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="form-label">所属部门（可多选）</label>
+                    <div class="flex flex-wrap gap-3 mt-1" id="newDeptGroup"></div>
+                </div>
+                    </div>
+                    <button id="addUserBtn" class="btn btn-primary btn-full">新增账号</button>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>账号</th>
+                            <th>姓名</th>
+                            <th>角色</th>
+                            <th>所属部门</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 编辑人员弹窗 -->
+        <div id="editUserModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">编辑人员信息</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="card">
+                    <input type="hidden" id="editUserIndex">
+                    <div class="form-group">
+                        <label class="form-label">账号</label>
+                        <input type="text" id="editAccount" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">姓名</label>
+                        <input type="text" id="editName" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">密码</label>
+                        <input type="text" id="editPwd" class="form-input">
+                    </div>
+            <div class="form-group">
+                <label class="form-label">角色（可多选）</label>
+                <div class="flex gap-4 mt-1" id="editRoleGroup">
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" value="checker" class="edit-role-cb"> 检查人</label>
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" value="duty" class="edit-role-cb"> 责任人</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">所属部门（可多选）</label>
+                <div class="flex flex-wrap gap-3 mt-1" id="editDeptGroup"></div>
+            </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button id="cancelEditUser" class="btn bg-gray-500 text-white">取消</button>
+                        <button id="saveEditUser" class="btn btn-primary">保存修改</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 部门管理弹窗 -->
+        <div id="deptManageModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">部门管理</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="card">
+                    <h4 class="text-sm font-semibold mb-2">新增部门</h4>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="newDept" class="form-input flex-1" placeholder="部门名称">
+                        <button id="addDeptBtn" class="btn btn-primary">新增</button>
+                    </div>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>部门名称</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deptTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 编辑部门弹窗 -->
+        <div id="editDeptModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">编辑部门</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="card">
+                    <input type="hidden" id="editDeptId">
+                    <label class="form-label">部门名称</label>
+                    <input type="text" id="editDeptName" class="form-input mb-4">
+                    <div class="flex justify-end gap-2">
+                        <button id="cancelEditDept" class="btn bg-gray-500 text-white">取消</button>
+                        <button id="saveEditDept" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 检查录入页面 -->
+        <div id="checkPage" class="container">
+            <div class="card">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="form-label">检查部门</label>
+                        <select id="deptSelect" class="form-input"></select>
+                    </div>
+                    <div>
+                        <label class="form-label">对应部门责任人</label>
+                        <select id="dutyUserSelect" class="form-input">
+                            <option value="">请先选择部门</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">检查人员</label>
+                        <input type="text" id="checkUser" class="form-input" placeholder="检查人姓名">
+                    </div>
+                    <div>
+                        <label class="form-label">检查日期</label>
+                        <input type="date" id="checkDate" class="form-input">
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-center">
+                    <button id="startCheck" class="btn btn-primary">开始检查</button>
+                </div>
+            </div>
+
+            <div id="checkArea" class="hidden">
+                <div class="space-y-4">
+                    <div class="card" data-item="sort" data-name="整理">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">一、整理 <span class="text-sm text-gray-500">满分：20分</span></h2>
+                            <span class="score-tip">当前分数：20</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">评分（0-20）</label>
+                                <input type="number" min="0" max="20" value="20" class="score-input form-input" data-type="sort">
+                            </div>
+                            <div>
+                                <label class="form-label">现场照片</label>
+                                <label class="cursor-pointer bg-gray-100 border border-dashed border-gray-300 rounded p-4 block text-center">
+                                    📷 上传照片
+                                    <input type="file" class="file-input check-img hidden" accept="image/*" multiple data-for="sort">
+                                </label>
+                                <div class="img-box"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 border-t pt-4">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" class="is-error" data-target="sort">
+                                <span>存在异常（需整改）</span>
+                            </label>
+                            <div class="error-area" data-area="sort">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <label class="form-label">指定责任人</label>
+                                        <select class="duty-user form-input" data-target="sort">
+                                            <option value="">请选择责任人</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">异常描述</label>
+                                        <input type="text" class="error-desc form-input" placeholder="问题描述" data-target="sort">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-item="arrange" data-name="整顿">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">二、整顿 <span class="text-sm text-gray-500">满分：20分</span></h2>
+                            <span class="score-tip">当前分数：20</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">评分（0-20）</label>
+                                <input type="number" min="0" max="20" value="20" class="score-input form-input" data-type="arrange">
+                            </div>
+                            <div>
+                                <label class="form-label">现场照片</label>
+                                <label class="cursor-pointer bg-gray-100 border border-dashed border-gray-300 rounded p-4 block text-center">
+                                    📷 上传照片
+                                    <input type="file" class="file-input check-img hidden" accept="image/*" multiple data-for="arrange">
+                                </label>
+                                <div class="img-box"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 border-t pt-4">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" class="is-error" data-target="arrange">
+                                <span>存在异常（需整改）</span>
+                            </label>
+                            <div class="error-area" data-area="arrange">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <label class="form-label">指定责任人</label>
+                                        <select class="duty-user form-input" data-target="arrange">
+                                            <option value="">请选择责任人</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">异常描述</label>
+                                        <input type="text" class="error-desc form-input" placeholder="问题描述" data-target="arrange">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-item="clean" data-name="清扫">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">三、清扫 <span class="text-sm text-gray-500">满分：20分</span></h2>
+                            <span class="score-tip">当前分数：20</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">评分（0-20）</label>
+                                <input type="number" min="0" max="20" value="20" class="score-input form-input" data-type="clean">
+                            </div>
+                            <div>
+                                <label class="form-label">现场照片</label>
+                                <label class="cursor-pointer bg-gray-100 border border-dashed border-gray-300 rounded p-4 block text-center">
+                                    📷 上传照片
+                                    <input type="file" class="file-input check-img hidden" accept="image/*" multiple data-for="clean">
+                                </label>
+                                <div class="img-box"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 border-t pt-4">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" class="is-error" data-target="clean">
+                                <span>存在异常（需整改）</span>
+                            </label>
+                            <div class="error-area" data-area="clean">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <label class="form-label">指定责任人</label>
+                                        <select class="duty-user form-input" data-target="clean">
+                                            <option value="">请选择责任人</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">异常描述</label>
+                                        <input type="text" class="error-desc form-input" placeholder="问题描述" data-target="clean">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-item="standard" data-name="清洁">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">四、清洁 <span class="text-sm text-gray-500">满分：20分</span></h2>
+                            <span class="score-tip">当前分数：20</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">评分（0-20）</label>
+                                <input type="number" min="0" max="20" value="20" class="score-input form-input" data-type="standard">
+                            </div>
+                            <div>
+                                <label class="form-label">现场照片</label>
+                                <label class="cursor-pointer bg-gray-100 border border-dashed border-gray-300 rounded p-4 block text-center">
+                                    📷 上传照片
+                                    <input type="file" class="file-input check-img hidden" accept="image/*" multiple data-for="standard">
+                                </label>
+                                <div class="img-box"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 border-t pt-4">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" class="is-error" data-target="standard">
+                                <span>存在异常（需整改）</span>
+                            </label>
+                            <div class="error-area" data-area="standard">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <label class="form-label">指定责任人</label>
+                                        <select class="duty-user form-input" data-target="standard">
+                                            <option value="">请选择责任人</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">异常描述</label>
+                                        <input type="text" class="error-desc form-input" placeholder="问题描述" data-target="standard">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-item="quality" data-name="素养">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">五、素养 <span class="text-sm text-gray-500">满分：20分</span></h2>
+                            <span class="score-tip">当前分数：20</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">评分（0-20）</label>
+                                <input type="number" min="0" max="20" value="20" class="score-input form-input" data-type="quality">
+                            </div>
+                            <div>
+                                <label class="form-label">现场照片</label>
+                                <label class="cursor-pointer bg-gray-100 border border-dashed border-gray-300 rounded p-4 block text-center">
+                                    📷 上传照片
+                                    <input type="file" class="file-input check-img hidden" accept="image/*" multiple data-for="quality">
+                                </label>
+                                <div class="img-box"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 border-t pt-4">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" class="is-error" data-target="quality">
+                                <span>存在异常（需整改）</span>
+                            </label>
+                            <div class="error-area" data-area="quality">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <label class="form-label">指定责任人</label>
+                                        <select class="duty-user form-input" data-target="quality">
+                                            <option value="">请选择责任人</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">异常描述</label>
+                                        <input type="text" class="error-desc form-input" placeholder="问题描述" data-target="quality">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-center gap-4">
+                    <button id="submitCheck" class="btn btn-primary btn-lg">提交检查结果</button>
+                    <button id="resetAll" class="btn bg-gray-500 text-white btn-lg">重置</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录页面 -->
+        <div id="recordPage" class="container hidden">
+            <div class="card">
+                <div class="flex flex-wrap gap-4 items-end">
+                    <div id="filterDutyWrap" class="hidden">
+                        <label class="form-label">责任人筛选</label>
+                        <select id="filterDuty" class="form-input">
+                            <option value="">全部人员</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">状态筛选</label>
+                        <select id="filterStatus" class="form-input">
+                            <option value="">全部状态</option>
+                            <option value="待整改">待整改</option>
+                            <option value="待确认">待确认</option>
+                            <option value="已整改">已整改</option>
+                            <option value="归档">已归档</option>
+                        </select>
+                    </div>
+                    <button id="filterBtn" class="btn btn-primary">筛选</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="overflow-auto">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>部门</th>
+                                <th>检查人</th>
+                                <th>责任人</th>
+                                <th>日期</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 记录详情/整改弹窗 -->
+        <div id="recordDetailModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">检查记录详情</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div id="detailContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== Supabase 配置 ====================
+        const SUPABASE_URL = 'https://mvpwmvueotebtlotjlhc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12cHdtdnVlb3RlYnRsb3RqbGhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMzU0OTQsImV4cCI6MjA5NjYxMTQ5NH0.uSreTRzG7pvrto081KTP04oOXBjy790nJojjSFSS7Ek';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ==================== 全局状态 ====================
+        let currentUser = null;
+        let userList = [];
+        let deptList = [];
+        let recordList = [];
+        let syncTimer = null;
+        const SYNC_INTERVAL = 3000;
+
+        // ==================== 状态码转换 ====================
+        function getStatusName(code) {
+            const map = {0:'待整改',1:'待确认',2:'已整改',3:'归档'};
+            return map[code] || '待整改';
+        }
+        function getStatusCode(name) {
+            const map = {'待整改':0,'待确认':1,'已整改':2,'归档':3};
+            return map[name] !== undefined ? map[name] : 0;
+        }
+
+        // ==================== 元素引用 ====================
+        const $ = id => document.getElementById(id);
+        const loginPage = $('loginPage');
+        const mainPage = document.getElementById('mainPage');
+        const loginAccount = document.getElementById('loginAccount');
+        const loginPwd = document.getElementById('loginPwd');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+        const userManageBtn = document.getElementById('userManageBtn');
+        const deptManageBtn = document.getElementById('deptManageBtn');
+        const userManageModal = document.getElementById('userManageModal');
+        const editUserModal = document.getElementById('editUserModal');
+        const deptManageModal = document.getElementById('deptManageModal');
+        const editDeptModal = document.getElementById('editDeptModal');
+        const recordDetailModal = document.getElementById('recordDetailModal');
+        const closeModals = document.querySelectorAll('.modal-close');
+        const navBtns = document.querySelectorAll('.nav-btn[data-page]');
+        const checkPage = document.getElementById('checkPage');
+        const recordPage = document.getElementById('recordPage');
+        const deptSelect = document.getElementById('deptSelect');
+        const dutyUserSelect = document.getElementById('dutyUserSelect');
+        const checkUser = document.getElementById('checkUser');
+        const checkDate = document.getElementById('checkDate');
+        const startCheck = document.getElementById('startCheck');
+        const checkArea = document.getElementById('checkArea');
+        const submitCheck = document.getElementById('submitCheck');
+        const resetAll = document.getElementById('resetAll');
+        const recordTable = document.getElementById('recordTable');
+        const detailContent = document.getElementById('detailContent');
+        const filterDutyWrap = document.getElementById('filterDutyWrap');
+        const filterDuty = document.getElementById('filterDuty');
+        const filterStatus = document.getElementById('filterStatus');
+        const filterBtn = document.getElementById('filterBtn');
+        const newAccount = document.getElementById('newAccount');
+        const newName = document.getElementById('newName');
+        const newPwd = document.getElementById('newPwd');
+        const newRoleGroup = document.getElementById('newRoleGroup');
+        const newDeptGroup = document.getElementById('newDeptGroup');
+        const addUserBtn = document.getElementById('addUserBtn');
+        const userTableBody = document.getElementById('userTableBody');
+        const editUserIndex = document.getElementById('editUserIndex');
+        const editAccount = document.getElementById('editAccount');
+        const editName = document.getElementById('editName');
+        const editPwd = document.getElementById('editPwd');
+        const editRoleGroup = document.getElementById('editRoleGroup');
+        const editDeptGroup = document.getElementById('editDeptGroup');
+        const saveEditUser = document.getElementById('saveEditUser');
+        const cancelEditUser = document.getElementById('cancelEditUser');
+
+        checkDate.valueAsDate = new Date();
+
+        // ==================== 数据加载 ====================
+        async function loadDepts() {
+            const { data, error } = await supabase.from('departments').select('*').order('id');
+            if (!error) deptList = data;
+        }
+        async function loadUsers() {
+            const { data, error } = await supabase.from('users').select('*').order('id');
+            if (error) return;
+            userList = data.map(u => ({
+                id: u.id, account: u.username, name: u.real_name, pwd: u.password,
+                role: u.role, dept: u.department, roles: [u.role],
+                depts: u.department ? [u.department] : [],
+                roleName: u.role==='admin'?'超级管理员':(u.role==='check'?'检查人':'责任人')
+            }));
+        }
+        async function loadRecords(duty, status) {
+            let q = supabase.from('check_records').select('*').order('created_at', { ascending: false });
+            if (status) q = q.eq('status', getStatusCode(status));
+            const { data, error } = await q;
+            if (error) return;
+            recordList = (data || []).map(r => ({
+                id: r.id, dept: r.department || '', dutyUser: r.duty_name || '',
+                checker: r.inspector_name || '', date: r.check_date ? r.check_date.split('T')[0] : '',
+                totalScore: r.total_score || 0, detail: r.details || {},
+                status: getStatusName(r.status), createdAt: r.created_at, area: r.area,
+                notes: r.notes, createdBy: r.created_by
+            }));
+            if (duty) recordList = recordList.filter(r => r.duty_name === duty);
+        }
+
+        // ==================== 开始同步轮询 ====================
+        function startSync() {
+            if (syncTimer) clearInterval(syncTimer);
+            syncTimer = setInterval(async () => {
+                try {
+                    await loadDepts();
+                    await loadUsers();
+                    await loadRecords(filterDuty.value, filterStatus.value);
+                } catch (e) { /* 静默处理 */ }
+            }, SYNC_INTERVAL);
+        }
+        function stopSync() {
+            if (syncTimer) { clearInterval(syncTimer); syncTimer = null; }
+        }
+
+        // ==================== 弹窗关闭 ====================
+        closeModals.forEach(btn => {
+            btn.onclick = function () {
+                userManageModal.classList.add('hidden');
+                editUserModal.classList.add('hidden');
+                deptManageModal.classList.add('hidden');
+                editDeptModal.classList.add('hidden');
+                recordDetailModal.classList.add('hidden');
+            }
+        });
+
+        // ==================== 导航 ====================
+        navBtns.forEach(btn => {
+            btn.onclick = function () {
+                navBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                    b.style.color = 'white';
+                });
+                this.classList.add('active');
+                this.style.backgroundColor = 'white';
+                this.style.color = '#2563eb';
+                if (this.dataset.page === 'check') {
+                    checkPage.classList.remove('hidden');
+                    recordPage.classList.add('hidden');
+                } else {
+                    checkPage.classList.add('hidden');
+                    recordPage.classList.remove('hidden');
+                    renderRecord();
+                }
+            }
+        });
+
+        // ==================== 部门选项渲染 ====================
+        function renderDeptOptions(selectEl) {
+            selectEl.innerHTML = '<option value="">请选择部门</option>';
+            deptList.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.name;
+                opt.innerText = d.name;
+                selectEl.appendChild(opt);
+            });
+        }
+        function renderDeptSelect() { renderDeptOptions(deptSelect); }
+
+        // ==================== 多选辅助函数 ====================
+        function getUserRoles(user) {
+            return user.roles || (user.role ? user.role.split(',').map(s => s.trim()).filter(Boolean) : []);
+        }
+        function getUserDepts(user) {
+            return user.depts || (user.dept ? user.dept.split(',').map(s => s.trim()).filter(Boolean) : []);
+        }
+        function collectCheckedValues(groupSelector) {
+            const cbs = document.querySelectorAll(groupSelector);
+            return Array.from(cbs).filter(cb => cb.checked).map(cb => cb.value).join(',');
+        }
+        function setCheckedValues(groupSelector, csv) {
+            const vals = (csv || '').split(',').map(s => s.trim()).filter(Boolean);
+            document.querySelectorAll(groupSelector).forEach(cb => { cb.checked = vals.includes(cb.value); });
+        }
+        function renderDeptCheckboxes(groupEl, selectedCsv) {
+            const selected = (selectedCsv || '').split(',').map(s => s.trim()).filter(Boolean);
+            groupEl.innerHTML = '';
+            deptList.forEach(d => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center gap-1 cursor-pointer';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.value = d.name;
+                cb.className = groupEl.id === 'newDeptGroup' ? 'new-dept-cb' : 'edit-dept-cb';
+                cb.checked = selected.includes(d.name);
+                label.appendChild(cb);
+                label.appendChild(document.createTextNode(d.name));
+                groupEl.appendChild(label);
+            });
+        }
+
+        function userHasRole(role) {
+            return currentUser && currentUser.roles && currentUser.roles.includes(role);
+        }
+        function getDutyUserName(account) {
+            const u = userList.find(x => getUserRoles(x).includes('duty') && x.account === account);
+            return u ? (u.name || u.account) : account;
+        }
+        function renderErrorDutyOptions(dept) {
+            if (dept === undefined) dept = deptSelect.value;
+            document.querySelectorAll('.duty-user').forEach(sel => {
+                sel.innerHTML = '<option value="">请选择责任人</option>';
+                if (!dept) return;
+                userList.filter(u => getUserRoles(u).includes('duty') && getUserDepts(u).includes(dept)).forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.account;
+                    opt.innerText = u.name || u.account;
+                    sel.appendChild(opt);
+                });
+            });
+        }
+        function bindDeptToDutyUser() {
+            deptSelect.onchange = function () {
+                const selectedDept = this.value;
+                dutyUserSelect.innerHTML = '<option value="">请选择责任人</option>';
+                document.querySelectorAll('.duty-user').forEach(sel => { sel.selectedIndex = 0; });
+                renderErrorDutyOptions(selectedDept);
+                if (!selectedDept) return;
+                userList.filter(u => getUserRoles(u).includes('duty') && getUserDepts(u).includes(selectedDept)).forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.account;
+                    opt.innerText = u.name || u.account;
+                    dutyUserSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // ==================== 部门管理 ====================
+        async function renderDeptTable() {
+            const tbody = document.getElementById('deptTableBody');
+            tbody.innerHTML = '';
+            deptList.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${d.name}</td>
+                    <td>
+                        <button class="edit-dept-btn text-blue-500 mr-2" data-id="${d.id}" data-name="${d.name}">编辑</button>
+                        <button class="del-dept-btn text-red-500" data-id="${d.id}">删除</button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('deptTableBody').addEventListener('click', async function (e) {
+            const t = e.target;
+            if (t.classList.contains('del-dept-btn')) {
+                if (!confirm('确定删除该部门？')) return;
+                try {
+                    await supabase.from('departments').delete().eq('id', t.dataset.id);
+                    await loadDepts(); renderDeptTable(); renderDeptSelect();
+                } catch (err) { alert(err.message); }
+            } else if (t.classList.contains('edit-dept-btn')) {
+                $('editDeptId').value = t.dataset.id;
+                $('editDeptName').value = t.dataset.name;
+                editDeptModal.classList.remove('hidden');
+            }
+        });
+
+        $('addDeptBtn').onclick = async function () {
+            const val = $('newDept').value.trim();
+            if (!val) return alert('请输入部门名称');
+            try {
+                await supabase.from('departments').insert({ name: val });
+                $('newDept').value = '';
+                await loadDepts(); renderDeptTable(); renderDeptSelect();
+            } catch (err) { alert(err.message); }
+        };
+
+        $('saveEditDept').onclick = async function () {
+            const id = $('editDeptId').value;
+            const name = $('editDeptName').value.trim();
+            if (!name) return alert('请输入部门名称');
+            try {
+                await supabase.from('departments').update({ name }).eq('id', id);
+                editDeptModal.classList.add('hidden');
+                await loadDepts(); renderDeptTable(); renderDeptSelect();
+            } catch (err) { alert(err.message); }
+        };
+        $('cancelEditDept').onclick = function () { editDeptModal.classList.add('hidden'); };
+
+        deptManageBtn.onclick = async function () {
+            deptManageModal.classList.remove('hidden');
+            renderDeptTable();
+        };
+
+        // ==================== 人员管理 ====================
+        async function renderUserTable() {
+            userTableBody.innerHTML = '';
+            userList.forEach(u => {
+                const roles = getUserRoles(u);
+                const depts = getUserDepts(u);
+                const isAdmin = roles.includes('admin');
+                const deptDisplay = depts.length ? depts.join('、') : '无';
+                const roleDisplay = u.roleName || (isAdmin ? '超级管理员' : roles.join('、'));
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${u.account}</td>
+                    <td>${u.name || ''}</td>
+                    <td>${roleDisplay}</td>
+                    <td>${deptDisplay}</td>
+                    <td>${isAdmin
+                        ? '<span class="text-gray-400">管理员不可编辑</span>'
+                        : `<button class="edit-user-btn text-blue-500" data-id="${u.id}" data-acc="${u.account}" data-name="${u.name||''}" data-pwd="${u.pwd}" data-role="${u.role || ''}" data-dept="${u.dept||''}">编辑</button>
+                           <button class="del-user-btn text-red-500 ml-2" data-id="${u.id}">删除</button>`}</td>`;
+                userTableBody.appendChild(tr);
+            });
+        }
+
+        userManageBtn.onclick = async function () {
+            userManageModal.classList.remove('hidden');
+            renderDeptCheckboxes(newDeptGroup, '');
+            await renderUserTable();
+        };
+
+        addUserBtn.onclick = async function () {
+            const acc = newAccount.value.trim();
+            const name = newName.value.trim();
+            const pwd = newPwd.value.trim();
+            const roles = collectCheckedValues('.new-role-cb');
+            const dept = collectCheckedValues('.new-dept-cb');
+            if (!acc || !pwd) return alert('账号、密码不能为空');
+            if (!roles) return alert('请至少选择一个角色');
+            try {
+                await supabase.from('users').insert({ username: acc, real_name: name, password: pwd, role: roles, department: dept });
+                newAccount.value = ''; newName.value = '';
+                setCheckedValues('.new-role-cb', ''); setCheckedValues('.new-dept-cb', '');
+                alert('新增人员成功');
+                await loadUsers(); renderUserTable();
+            } catch (err) { alert(err.message); }
+        };
+
+        userTableBody.addEventListener('click', async function (e) {
+            const t = e.target;
+            if (t.classList.contains('del-user-btn')) {
+                if (!confirm('确定删除该人员？')) return;
+                try {
+                    await supabase.from('users').delete().eq('id', t.dataset.id);
+                    await loadUsers(); renderUserTable();
+                } catch (err) { alert(err.message); }
+            } else if (t.classList.contains('edit-user-btn')) {
+                editUserIndex.value = t.dataset.id;
+                editAccount.value = t.dataset.acc;
+                editName.value = t.dataset.name;
+                editPwd.value = t.dataset.pwd;
+                setCheckedValues('.edit-role-cb', t.dataset.role || '');
+                renderDeptCheckboxes(editDeptGroup, t.dataset.dept || '');
+                editUserModal.classList.remove('hidden');
+            }
+        });
+
+        cancelEditUser.onclick = function () { editUserModal.classList.add('hidden'); };
+
+        saveEditUser.onclick = async function () {
+            const id = editUserIndex.value;
+            const acc = editAccount.value.trim();
+            const name = editName.value.trim();
+            const pwd = editPwd.value.trim();
+            const role = collectCheckedValues('.edit-role-cb');
+            const dept = collectCheckedValues('.edit-dept-cb');
+            if (!acc || !pwd) return alert('账号、密码不能为空');
+            if (!role) return alert('请至少选择一个角色');
+            try {
+                await supabase.from('users').update({ username: acc, real_name: name, password: pwd, role, department: dept }).eq('id', id);
+                editUserModal.classList.add('hidden');
+                alert('人员信息修改成功');
+                await loadUsers(); renderUserTable();
+            } catch (err) { alert(err.message); }
+        };
+
+        loginBtn.onclick = async function() {
+            const acc = loginAccount.value.trim();
+            const pwd = loginPwd.value.trim();
+            if (!acc || !pwd) return alert('请输入账号和密码');
+            try {
+                const { data, error } = await supabase.from('users').select('*').eq('username', acc).eq('password', pwd).single();
+                if (error || !data) return alert('账号或密码错误！\n默认账号：admin/check/duty  密码：123456');
+                currentUser = {
+                    id: data.id, account: data.username, name: data.real_name, pwd: data.password,
+                    role: data.role, dept: data.department, roles: [data.role],
+                    depts: data.department ? [data.department] : [],
+                    roleName: data.role==='admin'?'超级管理员':(data.role==='check'?'检查人':'责任人')
+                };
+                sessionStorage.setItem('5s_account', currentUser.account);
+                sessionStorage.setItem('5s_pwd', currentUser.pwd);
+                enterMainPage();
+            } catch (err) { alert('登录失败：' + err.message); }
+        };
+
+        function doLogout() {
+            stopSync();
+            currentUser = null;
+            sessionStorage.removeItem('5s_account');
+            sessionStorage.removeItem('5s_pwd');
+            mainPage.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+            loginAccount.value = '';
+            loginPwd.value = '';
+        }
+
+        async function enterMainPage() {
+            loginPage.classList.add('hidden');
+            mainPage.classList.remove('hidden');
+            const dn = currentUser.name || currentUser.account;
+            const rd = currentUser.roleName || (currentUser.roles ? currentUser.roles.join('、') : '');
+            userInfo.innerText = '当前：' + dn + '（' + rd + '）';
+            if (currentUser.roles && currentUser.roles.includes('admin')) {
+                userManageBtn.classList.remove('hidden');
+                deptManageBtn.classList.remove('hidden');
+            }
+            await loadDepts(); await loadUsers();
+            renderErrorDutyOptions();
+            await loadRecords(filterDuty.value, filterStatus.value);
+            setPermission(currentUser.role);
+            renderDeptSelect(); bindDeptToDutyUser();
+            renderRecord(); startSync();
+        }
+
+        logoutBtn.onclick = doLogout;
+
+        // ==================== 权限控制 ====================
+        function setPermission(role) {
+            const roles = currentUser ? (currentUser.roles || [role]) : [role];
+            const inputs = [
+                document.querySelectorAll('.score-input'),
+                document.querySelectorAll('.check-img'),
+                document.querySelectorAll('.is-error'),
+                document.querySelectorAll('.duty-user'),
+                document.querySelectorAll('.error-desc')
+            ];
+
+            const isDutyOnly = roles.includes('duty') && !roles.includes('checker') && !roles.includes('admin');
+            if (isDutyOnly) {
+                document.querySelector('[data-page="check"]').classList.add('hidden');
+                checkPage.classList.add('hidden');
+                recordPage.classList.remove('hidden');
+                navBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                    b.style.color = 'white';
+                });
+                const recBtn = document.querySelector('[data-page="record"]');
+                if (recBtn) { recBtn.classList.add('active'); recBtn.style.backgroundColor = 'white'; recBtn.style.color = '#2563eb'; }
+                filterDutyWrap.classList.add('hidden');
+                inputs.forEach(list => list.forEach(el => el.disabled = true));
+                deptSelect.disabled = dutyUserSelect.disabled = checkUser.disabled = checkDate.disabled = true;
+                startCheck.disabled = submitCheck.disabled = resetAll.disabled = true;
+                checkArea.classList.add('hidden');
+            } else {
+                document.querySelector('[data-page="check"]').classList.remove('hidden');
+                checkPage.classList.remove('hidden');
+                recordPage.classList.add('hidden');
+                filterDutyWrap.classList.remove('hidden');
+                inputs.forEach(list => list.forEach(el => el.disabled = false));
+                deptSelect.disabled = dutyUserSelect.disabled = checkUser.disabled = checkDate.disabled = false;
+                startCheck.disabled = submitCheck.disabled = resetAll.disabled = false;
+                filterDuty.innerHTML = '<option value="">全部人员</option>';
+                userList.filter(u => getUserRoles(u).includes('duty')).forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.account;
+                    opt.innerText = u.name || u.account;
+                    filterDuty.appendChild(opt);
+                });
+            }
+        }
+
+        // ==================== 异常复选框 ====================
+        document.querySelectorAll('.is-error').forEach(cb => {
+            cb.onchange = function () {
+                const area = document.querySelector(`.error-area[data-area="${this.dataset.target}"]`);
+                area.classList.toggle('show', this.checked);
+            };
+        });
+
+        // ==================== 图片预览 ====================
+        document.querySelectorAll('.file-input').forEach(input => {
+            input.onchange = function () {
+                const box = this.closest('.card').querySelector('.img-box');
+                Array.from(this.files).forEach(f => {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'img-preview';
+                        box.appendChild(img);
+                    };
+                    reader.readAsDataURL(f);
+                });
+            };
+        });
+
+        // ==================== 评分提示 ====================
+        function bindScoreTip() {
+            document.querySelectorAll('.score-input').forEach(input => {
+                input.oninput = function () {
+                    this.closest('[data-item]').querySelector('.score-tip').innerText = `当前分数：${this.value || 0}`;
+                }
+            });
+        }
+
+        // ==================== 检查流程 ====================
+        startCheck.onclick = function () {
+            const dept = deptSelect.value;
+            const dutyUser = dutyUserSelect.value;
+            const checkerName = checkUser.value.trim();
+            const date = checkDate.value;
+            if (!dept) return alert('请选择检查部门');
+            if (!dutyUser) return alert('请选择部门责任人');
+            if (!checkerName) return alert('请填写检查人员');
+            if (!date) return alert('请选择检查日期');
+            checkArea.classList.remove('hidden');
+            bindScoreTip();
+        };
+
+        function collectCheckData() {
+            const data = [];
+            document.querySelectorAll('[data-item]').forEach(card => {
+                const itemType = card.dataset.item;
+                const itemName = card.dataset.name;
+                const score = parseInt(card.querySelector('.score-input').value) || 0;
+                const imgs = Array.from(card.querySelectorAll('.img-preview')).map(img => img.src);
+                const isError = card.querySelector('.is-error').checked;
+                let errorInfo = null;
+                if (isError) {
+                    const dutyVal = card.querySelector('.duty-user').value.trim();
+                    if (!dutyVal) return alert(`【${itemName}】异常项请选择责任人`);
+                    errorInfo = {
+                        dutyUser: dutyVal,
+                        desc: card.querySelector('.error-desc').value.trim(),
+                        status: '进行中'
+                    };
+                }
+                data.push({ itemType, itemName, score, imgs, isError, errorInfo });
+            });
+            return data;
+        }
+
+        function resetCheckForm() {
+            document.querySelectorAll('.score-input').forEach(el => el.value = 20);
+            document.querySelectorAll('.img-box').forEach(el => el.innerHTML = '');
+            document.querySelectorAll('.is-error').forEach(el => el.checked = false);
+            document.querySelectorAll('.error-area').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.duty-user').forEach(el => el.selectedIndex = 0);
+            document.querySelectorAll('.error-desc').forEach(el => el.value = '');
+            document.querySelectorAll('.score-tip').forEach(el => el.innerText = '当前分数：20');
+            checkArea.classList.add('hidden');
+        }
+
+        submitCheck.onclick = async function () {
+            const detail = collectCheckData();
+            const totalScore = detail.reduce((s, i) => s + i.score, 0);
+            if (!confirm('总分：' + totalScore + ' / 100，确认提交？')) return;
+            const record = {
+                department: deptSelect.value,
+                duty_name: dutyUserSelect.value,
+                inspector_name: checkUser.value.trim(),
+                check_date: checkDate.value,
+                total_score: totalScore,
+                max_score: 25,
+                details: { items: detail },
+                status: detail.some(d => d.isError) ? 0 : 3,
+                created_by: currentUser ? currentUser.account : ''
+            };
+            try {
+                const { error } = await supabase.from('check_records').insert(record);
+                if (error) throw error;
+                alert('提交成功！');
+                resetCheckForm();
+                await loadRecords(filterDuty.value, filterStatus.value);
+                renderRecord();
+            } catch (err) { alert('提交失败：' + err.message); }
+        };
+
+        resetAll.onclick = function () {
+            if (confirm('确定重置当前检查表单？所有未提交数据将丢失。')) resetCheckForm();
+        };
+
+        // ==================== 记录详情 ====================
+        async function showRecordDetail(record, showActions) {
+            let items = record.detail ? (record.detail.items || record.detail) : [];
+            if (!Array.isArray(items)) items = [];
+            let itemsHtml = items.map(d => {
+                const imgsHtml = d.imgs && d.imgs.length > 0
+                    ? `<div class="img-box">${d.imgs.map(src => `<img src="${src}" class="img-preview">`).join('')}</div>`
+                    : '<span class="text-gray-400">无照片</span>';
+                let errorHtml = '';
+                if (d.isError && d.errorInfo) {
+                    let fixHtml = '';
+                    if (d.errorInfo.fixPlan || (d.errorInfo.fixImgs && d.errorInfo.fixImgs.length)) {
+                        const fixImgsHtml = d.errorInfo.fixImgs && d.errorInfo.fixImgs.length
+                            ? `<div class="img-box">${d.errorInfo.fixImgs.map(src => `<img src="${src}" class="img-preview">`).join('')}</div>`
+                            : '';
+                        fixHtml = `
+                            <div class="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <p><strong>整改方案：</strong>${d.errorInfo.fixPlan || '无'}</p>
+                                ${fixImgsHtml}
+                                <p class="text-sm text-gray-500 mt-1">提交时间：${d.errorInfo.fixSubmitAt || ''}</p>
+                            </div>`;
+                    }
+
+                    let actionButtons = '';
+                    // 责任人且状态为进行中：显示整改表单
+                    if (showActions && currentUser && userHasRole('duty') && d.errorInfo.status === '进行中') {
+                        actionButtons = `
+                            <div class="fix-form mt-3" data-record-id="${record.id}" data-item="${d.itemType}">
+                                <label class="form-label">整改方案</label>
+                                <textarea class="fix-plan form-input" rows="2" placeholder="请输入整改方案"></textarea>
+                                <label class="form-label mt-2">整改照片</label>
+                                <input type="file" class="fix-img-input form-input" accept="image/*" multiple>
+                                <div class="fix-img-preview img-box mt-2"></div>
+                                <button class="btn bg-green-600 text-white submit-fix-btn mt-2">提交整改</button>
+                            </div>`;
+                    }
+                    // 检查人/管理员且状态为待确认：显示确认/退回按钮
+                    else if (showActions && currentUser && (userHasRole('checker') || userHasRole('admin')) && d.errorInfo.status === '待确认') {
+                        actionButtons = `
+                            <div class="mt-3">
+                                <label class="form-label">退回原因（如退回请填写）</label>
+                                <textarea class="reject-reason form-input" rows="2" placeholder="请输入退回原因"></textarea>
+                                <div class="mt-2 flex gap-2">
+                                    <button class="btn bg-green-600 text-white confirm-fix-btn" data-record-id="${record.id}" data-item="${d.itemType}">确认通过</button>
+                                    <button class="btn bg-red-500 text-white reject-fix-btn" data-record-id="${record.id}" data-item="${d.itemType}">退回整改</button>
+                                </div>
+                            </div>`;
+                    }
+                    // 责任人且状态为待确认：显示等待确认提示
+                    else if (showActions && currentUser && userHasRole('duty') && d.errorInfo.status === '待确认') {
+                        actionButtons = `<p class="mt-2 text-green-600 font-bold">整改已提交，等待检查人确认</p>`;
+                    }
+                    // 被退回显示退回原因
+                    else if (d.errorInfo.status === '进行中' && d.errorInfo.rejectReason) {
+                        actionButtons = `<p class="mt-2 text-red-500 font-bold">退回原因：${d.errorInfo.rejectReason}</p>`;
+                    }
+
+                    errorHtml = `
+                        <div class="mt-2 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p><strong>异常项 - 责任人：</strong>${d.errorInfo.dutyUser}</p>
+                            <p><strong>问题描述：</strong>${d.errorInfo.desc}</p>
+                            <p><strong>整改状态：</strong><span class="text-red-500 font-bold">${d.errorInfo.status}</span></p>
+                            ${fixHtml}
+                            ${actionButtons}
+                        </div>`;
+                }
+                return `<div class="mb-4 p-4 border rounded-lg">
+                    <h3 class="font-bold">${d.itemName} - <span class="text-blue-500">得分：${d.score} / 20</span></h3>
+                    ${imgsHtml}${errorHtml}
+                </div>`;
+            }).join('');
+
+            let stHtml = record.status;
+            if (record.status === '待整改') stHtml = '<span class="text-red-500 font-bold">待整改</span>';
+            else if (record.status === '待确认') stHtml = '<span class="text-orange-500 font-bold">待确认</span>';
+            else if (record.status === '已整改') stHtml = '<span class="text-green-500 font-bold">已整改</span>';
+            else if (record.status === '归档') stHtml = '<span class="text-gray-500 font-bold">已归档</span>';
+
+            detailContent.innerHTML = `
+                <div class="mb-4">
+                    <p><strong>部门：</strong>${record.dept}</p>
+                    <p><strong>责任人：</strong>${getDutyUserName(record.dutyUser)}</p>
+                    <p><strong>检查人：</strong>${record.checker}</p>
+                    <p><strong>日期：</strong>${record.date}</p>
+                    <p><strong>总分：</strong><span class="text-blue-500 font-bold">${record.totalScore} / 100</span></p>
+                    <p><strong>状态：</strong>${stHtml}</p>
+                </div><hr class="mb-4">
+                ${itemsHtml}
+                ${showActions && currentUser && (userHasRole('checker') || userHasRole('admin')) && record.status !== '归档'
+                    ? `<div class="text-center mt-4"><button class="btn bg-gray-500 text-white archive-btn" data-record-id="${record.id}">归档此记录</button></div>`
+                    : ''}`;
+
+            // 整改照片预览
+            detailContent.querySelectorAll('.fix-img-input').forEach(input => {
+                input.onchange = function () {
+                    const box = this.closest('.fix-form').querySelector('.fix-img-preview');
+                    box.innerHTML = '';
+                    Array.from(this.files).forEach(f => {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'img-preview';
+                            box.appendChild(img);
+                        };
+                        reader.readAsDataURL(f);
+                    });
+                };
+            });
+
+            // 提交整改
+            detailContent.querySelectorAll('.submit-fix-btn').forEach(btn => {
+                btn.onclick = async function () {
+                    const form = this.closest('.fix-form');
+                    const rid = parseInt(form.dataset.recordId);
+                    const itemType = form.dataset.item;
+                    const rec = recordList.find(r => r.id === rid);
+                    if (!rec) return;
+                    const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
+                    const detailItem = items.find(d => d.itemType === itemType);
+                    if (!detailItem || !detailItem.errorInfo) return;
+                    const plan = form.querySelector('.fix-plan').value.trim();
+                    if (!plan) return alert('请输入整改方案');
+                    const imgs = [];
+                    form.querySelectorAll('.fix-img-preview img').forEach(img => imgs.push(img.src));
+                    detailItem.errorInfo.fixPlan = plan;
+                    detailItem.errorInfo.fixImgs = imgs;
+                    detailItem.errorInfo.fixSubmitAt = new Date().toLocaleString();
+                    detailItem.errorInfo.status = '待确认';
+                    const hasOngoing = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '进行中');
+                    const hasPending = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '待确认');
+                    const newStatus = hasOngoing ? 0 : (hasPending ? 1 : 2);
+                    try {
+                        await supabase.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
+                        alert('整改提交成功，等待检查人确认');
+                        await loadRecords(filterDuty.value, filterStatus.value);
+                        const updated = recordList.find(r => r.id === rid);
+                        if (updated) showRecordDetail(updated, showActions);
+                        renderRecord();
+                    } catch (err) { alert('操作失败：' + err.message); }
+                };
+            });
+
+            // 确认通过
+            detailContent.querySelectorAll('.confirm-fix-btn').forEach(btn => {
+                btn.onclick = async function () {
+                    const rid = parseInt(this.dataset.recordId);
+                    const itemType = this.dataset.item;
+                    const rec = recordList.find(r => r.id === rid);
+                    if (!rec) return;
+                    const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
+                    const detailItem = items.find(d => d.itemType === itemType);
+                    if (!detailItem || !detailItem.errorInfo) return;
+                    detailItem.errorInfo.status = '已整改';
+                    detailItem.errorInfo.checkerConfirm = 'confirmed';
+                    const allFixed = items.every(d => !d.isError || (d.errorInfo && d.errorInfo.status === '已整改'));
+                    const newStatus = allFixed ? 3 : 1;
+                    try {
+                        await supabase.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
+                        alert('已确认通过');
+                        await loadRecords(filterDuty.value, filterStatus.value);
+                        const updated = recordList.find(r => r.id === rid);
+                        if (updated) showRecordDetail(updated, showActions);
+                        renderRecord();
+                    } catch (err) { alert('操作失败：' + err.message); }
+                };
+            });
+
+            // 退回整改
+            detailContent.querySelectorAll('.reject-fix-btn').forEach(btn => {
+                btn.onclick = async function () {
+                    const rid = parseInt(this.dataset.recordId);
+                    const itemType = this.dataset.item;
+                    const rec = recordList.find(r => r.id === rid);
+                    if (!rec) return;
+                    const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
+                    const detailItem = items.find(d => d.itemType === itemType);
+                    if (!detailItem || !detailItem.errorInfo) return;
+                    const reason = this.closest('div').parentElement.querySelector('.reject-reason').value.trim();
+                    if (!reason) return alert('请输入退回原因');
+                    detailItem.errorInfo.status = '进行中';
+                    detailItem.errorInfo.rejectReason = reason;
+                    try {
+                        await supabase.from('check_records').update({ details: { items }, status: 0 }).eq('id', rid);
+                        alert('已退回整改');
+                        await loadRecords(filterDuty.value, filterStatus.value);
+                        const updated = recordList.find(r => r.id === rid);
+                        if (updated) showRecordDetail(updated, showActions);
+                        renderRecord();
+                    } catch (err) { alert('操作失败：' + err.message); }
+                };
+            });
+
+            detailContent.querySelectorAll('.archive-btn').forEach(btn => {
+                btn.onclick = async function () {
+                    const rid = parseInt(this.dataset.recordId);
+                    if (!confirm('确定归档此记录？')) return;
+                    try {
+                        const rec = recordList.find(r => r.id === rid);
+                        const detail = rec ? (rec.detail && rec.detail.items ? { items: rec.detail.items } : rec.detail) : {};
+                        await supabase.from('check_records').update({ status: 3, details: detail }).eq('id', rid);
+                        alert('归档成功');
+                        await loadRecords(filterDuty.value, filterStatus.value);
+                        const updated = recordList.find(r => r.id === rid);
+                        if (updated) showRecordDetail(updated, showActions);
+                        renderRecord();
+                    } catch (err) { alert('操作失败：' + err.message); }
+                };
+            });
+
+            recordDetailModal.classList.remove('hidden');
+        }
+
+        // ==================== 记录渲染 ====================
+        async function renderRecord(dutyVal, statusVal) {
+            dutyVal = dutyVal || filterDuty.value || '';
+            statusVal = statusVal || filterStatus.value || '';
+            await loadRecords(dutyVal, statusVal);
+
+            recordTable.innerHTML = '';
+            recordList.forEach(r => {
+                const tr = document.createElement('tr');
+                const canDelete = currentUser && userHasRole('admin');
+                tr.innerHTML = `
+                    <td>${r.dept}</td><td>${r.checker}</td><td>${getDutyUserName(r.dutyUser)}</td>
+                    <td>${r.date}</td><td>${r.status}</td>
+                    <td>
+                        <button class="view-detail text-blue-500" data-id="${r.id}">查看详情</button>
+                        ${canDelete ? `<button class="del-record text-red-500 ml-2" data-id="${r.id}">删除</button>` : ''}
+                    </td>`;
+                recordTable.appendChild(tr);
+            });
+
+            recordTable.querySelectorAll('.view-detail').forEach(btn => {
+                btn.onclick = function () {
+                    const rec = recordList.find(r => r.id === parseInt(this.dataset.id));
+                    if (rec) {
+                    const canEdit = currentUser && (userHasRole('duty') || userHasRole('checker') || userHasRole('admin'));
+                    showRecordDetail(rec, canEdit);
+                    }
+                };
+            });
+
+            recordTable.querySelectorAll('.del-record').forEach(btn => {
+                btn.onclick = async function () {
+                    const rid = parseInt(this.dataset.id);
+                    if (!confirm('确定删除此记录？此操作不可恢复。')) return;
+                    try {
+                        await supabase.from('check_records').delete().eq('id', rid);
+                        alert('删除成功');
+                        await renderRecord();
+                    } catch (err) { alert(err.message); }
+                };
+            });
+
+            filterDuty.innerHTML = '<option value="">全部人员</option>';
+            userList.filter(u => getUserRoles(u).includes('duty')).forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.account;
+                opt.innerText = u.name || u.account;
+                filterDuty.appendChild(opt);
+            });
+            filterDuty.value = dutyVal;
+            filterStatus.value = statusVal;
+        }
+
+        filterBtn.onclick = () => renderRecord();
+
+        // ==================== 回车登录 ====================
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !loginPage.classList.contains('hidden')) loginBtn.click();
+        });
+
+        // ==================== 自动恢复登录 ====================
+        (async function autoRestore() {
+            const acc = sessionStorage.getItem('5s_account');
+            const pwd = sessionStorage.getItem('5s_pwd');
+            if (acc && pwd) {
+                try {
+                    const { data, error } = await supabase.from('users').select('*').eq('username', acc).eq('password', pwd).single();
+                    if (!error && data) {
+                        currentUser = {
+                            id: data.id, account: data.username, name: data.real_name, pwd: data.password,
+                            role: data.role, dept: data.department, roles: [data.role],
+                            depts: data.department ? [data.department] : [],
+                            roleName: data.role==='admin'?'超级管理员':(data.role==='check'?'检查人':'责任人')
+                        };
+                        loginPage.classList.add('hidden');
+                        mainPage.classList.remove('hidden');
+                        const displayName = currentUser.name || currentUser.account;
+                        const roleDisplay = currentUser.roleName || (currentUser.roles ? currentUser.roles.join('、') : '');
+                        userInfo.innerText = '当前：' + displayName + '（' + roleDisplay + '）';
+                        if (currentUser.roles && currentUser.roles.includes('admin')) {
+                            userManageBtn.classList.remove('hidden');
+                            deptManageBtn.classList.remove('hidden');
+                        }
+                        await loadDepts(); await loadUsers();
+                        renderErrorDutyOptions();
+                        await loadRecords('', '');
+                        setPermission(currentUser.role);
+                        renderDeptSelect(); bindDeptToDutyUser();
+                        renderRecord(); startSync();
+                    }
+                } catch (e) { /* 网络不通 */ }
+            }
+        })();
+    </script>
+</body>
+</html>
