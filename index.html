@@ -1431,83 +1431,87 @@
             // 提交整改
             detailContent.querySelectorAll('.submit-fix-btn').forEach(btn => {
                 btn.onclick = async function () {
-                    const form = this.closest('.fix-form');
-                    const rid = parseInt(form.dataset.recordId);
-                    const itemType = form.dataset.item;
-                    const rec = recordList.find(r => r.id === rid);
-                    if (!rec) return;
-                    const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
-                    const detailItem = items.find(d => d.itemType === itemType);
-                    if (!detailItem || !detailItem.errorInfo) return;
-                    const plan = form.querySelector('.fix-plan').value.trim();
-                    if (!plan) return alert('请输入整改方案');
-                    const imgs = [];
-                    form.querySelectorAll('.fix-img-preview img').forEach(img => imgs.push(img.src));
-                    detailItem.errorInfo.fixPlan = plan;
-                    detailItem.errorInfo.fixImgs = imgs;
-                    detailItem.errorInfo.fixSubmitAt = new Date().toLocaleString();
-                    detailItem.errorInfo.status = '待确认';
-                    const hasOngoing = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '进行中');
-                    const hasPending = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '待确认');
-                    const newStatus = hasOngoing ? 0 : (hasPending ? 1 : 2);
                     try {
+                        const form = this.closest('.fix-form');
+                        const rid = parseInt(form.dataset.recordId);
+                        const itemType = form.dataset.item;
+                        const rec = recordList.find(r => r.id === rid);
+                        if (!rec) { alert('未找到记录，请刷新页面重试'); return; }
+                        const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
+                        const detailItem = Array.isArray(items) ? items.find(d => d.itemType === itemType) : null;
+                        if (!detailItem) { alert('未找到检查项信息，请刷新页面或联系管理员'); return; }
+                        if (!detailItem.errorInfo) { alert('该检查项无异常信息，无需整改'); return; }
+                        const plan = form.querySelector('.fix-plan').value.trim();
+                        if (!plan) return alert('请输入整改方案！');
+                        const imgs = [];
+                        form.querySelectorAll('.fix-img-preview img').forEach(img => imgs.push(img.src));
+                        detailItem.errorInfo.fixPlan = plan;
+                        detailItem.errorInfo.fixImgs = imgs;
+                        detailItem.errorInfo.fixSubmitAt = new Date().toLocaleString();
+                        detailItem.errorInfo.status = '待确认';
+                        const hasOngoing = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '进行中');
+                        const hasPending = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '待确认');
+                        const newStatus = hasOngoing ? 0 : (hasPending ? 1 : 2);
                         await sb.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
                         alert('整改提交成功，等待检查人确认');
                         await loadRecords(filterDuty.value, filterStatus.value);
                         const updated = recordList.find(r => r.id === rid);
                         if (updated) showRecordDetail(updated, showActions);
                         renderRecord();
-                    } catch (err) { alert('操作失败：' + err.message); }
+                    } catch (err) {
+                        alert('操作失败：' + err.message);
+                        console.error('提交整改出错:', err);
+                    }
                 };
             });
 
             // 确认通过
             detailContent.querySelectorAll('.confirm-fix-btn').forEach(btn => {
                 btn.onclick = async function () {
-                    const rid = parseInt(this.dataset.recordId);
-                    const itemType = this.dataset.item;
-                    const rec = recordList.find(r => r.id === rid);
-                    if (!rec) return;
-                    const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
-                    const detailItem = items.find(d => d.itemType === itemType);
-                    if (!detailItem || !detailItem.errorInfo) return;
-                    detailItem.errorInfo.status = '已整改';
-                    detailItem.errorInfo.checkerConfirm = 'confirmed';
-                    const allFixed = items.every(d => !d.isError || (d.errorInfo && d.errorInfo.status === '已整改'));
-                    const newStatus = allFixed ? 3 : 1;
                     try {
+                        const rid = parseInt(this.dataset.recordId);
+                        const itemType = this.dataset.item;
+                        const rec = recordList.find(r => r.id === rid);
+                        if (!rec) { alert('未找到记录，请刷新页面重试'); return; }
+                        const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
+                        const detailItem = Array.isArray(items) ? items.find(d => d.itemType === itemType) : null;
+                        if (!detailItem || !detailItem.errorInfo) { alert('未找到检查项信息'); return; }
+                        detailItem.errorInfo.status = '已整改';
+                        detailItem.errorInfo.checkerConfirm = 'confirmed';
+                        const allFixed = items.every(d => !d.isError || (d.errorInfo && d.errorInfo.status === '已整改'));
+                        const newStatus = allFixed ? 3 : 1;
                         await sb.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
                         alert('已确认通过');
                         await loadRecords(filterDuty.value, filterStatus.value);
                         const updated = recordList.find(r => r.id === rid);
                         if (updated) showRecordDetail(updated, showActions);
                         renderRecord();
-                    } catch (err) { alert('操作失败：' + err.message); }
+                    } catch (err) { alert('操作失败：' + err.message); console.error('确认通过出错:', err); }
                 };
             });
 
             // 退回整改
             detailContent.querySelectorAll('.reject-fix-btn').forEach(btn => {
                 btn.onclick = async function () {
-                    const rid = parseInt(this.dataset.recordId);
-                    const itemType = this.dataset.item;
-                    const rec = recordList.find(r => r.id === rid);
-                    if (!rec) return;
-                    const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
-                    const detailItem = items.find(d => d.itemType === itemType);
-                    if (!detailItem || !detailItem.errorInfo) return;
-                    const reason = this.closest('div').parentElement.querySelector('.reject-reason').value.trim();
-                    if (!reason) return alert('请输入退回原因');
-                    detailItem.errorInfo.status = '进行中';
-                    detailItem.errorInfo.rejectReason = reason;
                     try {
+                        const rid = parseInt(this.dataset.recordId);
+                        const itemType = this.dataset.item;
+                        const rec = recordList.find(r => r.id === rid);
+                        if (!rec) { alert('未找到记录，请刷新页面重试'); return; }
+                        const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
+                        const detailItem = Array.isArray(items) ? items.find(d => d.itemType === itemType) : null;
+                        if (!detailItem || !detailItem.errorInfo) { alert('未找到检查项信息'); return; }
+                        const reason = this.closest('div').parentElement.querySelector('.reject-reason').value.trim();
+                        if (!reason) return alert('请输入退回原因');
+                        detailItem.errorInfo.status = '进行中';
+                        detailItem.errorInfo.rejectReason = reason;
                         await sb.from('check_records').update({ details: { items }, status: 0 }).eq('id', rid);
                         alert('已退回整改');
                         await loadRecords(filterDuty.value, filterStatus.value);
                         const updated = recordList.find(r => r.id === rid);
                         if (updated) showRecordDetail(updated, showActions);
                         renderRecord();
-                    } catch (err) { alert('操作失败：' + err.message); }
+                    } catch (err) { alert('操作失败：' + err.message); console.error('退回整改出错:', err); }
                 };
             });
 
