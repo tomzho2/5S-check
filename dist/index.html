@@ -1117,7 +1117,7 @@
             if (!acc || !pwd) return alert('请输入账号和密码');
             try {
                 const { data, error } = await sb.from('users').select('*').eq('username', acc).eq('password', pwd).single();
-                if (error || !data) return alert('账号或密码错误！\n默认账号：admin/check/duty  密码：123456');
+                if (error || !data) return alert('账号或密码错误！（默认账号：admin/check/duty  密码：123456）');
                 currentUser = {
                     id: data.id, account: data.username, name: data.real_name, pwd: data.password,
                     role: data.role, dept: data.department, roles: [data.role],
