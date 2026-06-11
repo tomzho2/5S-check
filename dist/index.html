@@ -1146,8 +1146,7 @@
         }
 
         async function enterMainPage() {
-            loginPage.classList.add('hidden');
-            mainPage.classList.remove('hidden');
+            // 先设置权限，再显示页面（避免责任人看到检查录入界面闪烁）
             const dn = currentUser.name || currentUser.account;
             const rd = currentUser.roleName || (currentUser.roles ? currentUser.roles.join('、') : '');
             userInfo.innerText = '当前：' + dn + '（' + rd + '）';
@@ -1155,10 +1154,13 @@
                 userManageBtn.classList.remove('hidden');
                 deptManageBtn.classList.remove('hidden');
             }
+            setPermission(currentUser.role);
+            // 权限设置完成后才显示主页面
+            loginPage.classList.add('hidden');
+            mainPage.classList.remove('hidden');
             await loadDepts(); await loadUsers();
             renderErrorDutyOptions();
             await loadRecords(filterDuty.value, filterStatus.value);
-            setPermission(currentUser.role);
             renderDeptSelect(); bindDeptToDutyUser();
             renderRecord(); startSync();
         }
@@ -1625,8 +1627,6 @@
                             depts: data.department ? [data.department] : [],
                             roleName: data.role==='admin'?'超级管理员':(data.role==='check'?'检查人':'责任人')
                         };
-                        loginPage.classList.add('hidden');
-                        mainPage.classList.remove('hidden');
                         const displayName = currentUser.name || currentUser.account;
                         const roleDisplay = currentUser.roleName || (currentUser.roles ? currentUser.roles.join('、') : '');
                         userInfo.innerText = '当前：' + displayName + '（' + roleDisplay + '）';
@@ -1634,6 +1634,9 @@
                             userManageBtn.classList.remove('hidden');
                             deptManageBtn.classList.remove('hidden');
                         }
+                        setPermission(currentUser.role);
+                        loginPage.classList.add('hidden');
+                        mainPage.classList.remove('hidden');
                         await loadDepts(); await loadUsers();
                         renderErrorDutyOptions();
                         await loadRecords('', '');
