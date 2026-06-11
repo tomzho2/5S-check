@@ -196,30 +196,32 @@
             inset: 0;
             background: rgba(0,0,0,0.5);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             padding: 1rem;
             z-index: 100;
+            overflow-y: auto;
         }
         .modal-content {
             background: white;
             border-radius: 0.5rem;
             max-width: 600px;
             width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
+            max-height: none;
+            margin: 5vh auto 2rem auto;
             padding: 1.5rem;
             -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
         }
         @media (max-width: 480px) {
+            .modal {
+                padding: 0.75rem;
+                align-items: flex-start;
+            }
             .modal-content {
-                max-height: 90vh;
                 padding: 1rem;
                 border-radius: 0.375rem;
-            }
-            .modal {
-                align-items: flex-start;
-                padding-top: 2rem;
+                margin: 3vh auto 1.5rem auto;
             }
         }
         .modal-header {
@@ -892,13 +894,25 @@
         }
 
         // ==================== 弹窗关闭 ====================
+        function openModal(modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            requestAnimationFrame(() => { window.scrollTo(0, 0); });
+        }
+        function closeModal(modal) {
+            modal.classList.add('hidden');
+            if (document.querySelectorAll('.modal:not(.hidden)').length === 0) {
+                document.body.style.overflow = '';
+                document.body.style.height = '';
+            }
+        }
         closeModals.forEach(btn => {
             btn.onclick = function () {
-                userManageModal.classList.add('hidden');
-                editUserModal.classList.add('hidden');
-                deptManageModal.classList.add('hidden');
-                editDeptModal.classList.add('hidden');
-                recordDetailModal.classList.add('hidden');
+                closeModal(userManageModal);
+                closeModal(editUserModal);
+                closeModal(deptManageModal);
+                closeModal(editDeptModal);
+                closeModal(recordDetailModal);
             }
         });
 
@@ -1031,7 +1045,7 @@
             } else if (t.classList.contains('edit-dept-btn')) {
                 $('editDeptId').value = t.dataset.id;
                 $('editDeptName').value = t.dataset.name;
-                editDeptModal.classList.remove('hidden');
+                openModal(editDeptModal);
             }
         });
 
@@ -1051,14 +1065,14 @@
             if (!name) return alert('请输入部门名称');
             try {
                 await sb.from('departments').update({ name }).eq('id', id);
-                editDeptModal.classList.add('hidden');
+                closeModal(editDeptModal);
                 await loadDepts(); renderDeptTable(); renderDeptSelect();
             } catch (err) { alert(err.message); }
         };
-        $('cancelEditDept').onclick = function () { editDeptModal.classList.add('hidden'); };
+        $('cancelEditDept').onclick = function () { closeModal(editDeptModal); };
 
         deptManageBtn.onclick = async function () {
-            deptManageModal.classList.remove('hidden');
+            openModal(deptManageModal);
             renderDeptTable();
         };
 
@@ -1086,7 +1100,7 @@
         }
 
         userManageBtn.onclick = async function () {
-            userManageModal.classList.remove('hidden');
+            openModal(userManageModal);
             renderDeptCheckboxes(newDeptGroup, '');
             await renderUserTable();
         };
@@ -1123,11 +1137,11 @@
                 editPwd.value = t.dataset.pwd;
                 setCheckedValues('.edit-role-cb', t.dataset.role || '');
                 renderDeptCheckboxes(editDeptGroup, t.dataset.dept || '');
-                editUserModal.classList.remove('hidden');
+                openModal(editUserModal);
             }
         });
 
-        cancelEditUser.onclick = function () { editUserModal.classList.add('hidden'); };
+        cancelEditUser.onclick = function () { closeModal(editUserModal); };
 
         saveEditUser.onclick = async function () {
             const id = editUserIndex.value;
@@ -1140,7 +1154,7 @@
             if (!role) return alert('请至少选择一个角色');
             try {
                 await sb.from('users').update({ username: acc, real_name: name, password: pwd, role, department: dept }).eq('id', id);
-                editUserModal.classList.add('hidden');
+                closeModal(editUserModal);
                 alert('人员信息修改成功');
                 await loadUsers(); renderUserTable();
             } catch (err) { alert(err.message); }
@@ -1584,7 +1598,7 @@
                 };
             });
 
-            recordDetailModal.classList.remove('hidden');
+            openModal(recordDetailModal);
         }
 
         // ==================== 记录渲染 ====================
@@ -1705,6 +1719,42 @@
                 } catch (e) { /* 网络不通 */ }
             }
         })();
+
+        // ==================== 移动端键盘/弹窗适配 ====================
+        // 输入框失焦（键盘收起）时修复弹窗位置
+        document.addEventListener('blur', function(e) {
+            if ((e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') && !recordDetailModal.classList.contains('hidden')) {
+                setTimeout(() => {
+                    const mc = recordDetailModal.querySelector('.modal-content');
+                    if (mc) {
+                        // 延迟等待键盘完全收起后恢复滚动
+                        window.scrollTo(0, 0);
+                        // 确保modal内容可见
+                        recordDetailModal.style.overflow = 'auto';
+                        recordDetailModal.scrollTop = 0;
+                    }
+                }, 100);
+            }
+        }, true);
+
+        // 视觉视口变化处理（移动端键盘弹出/收起）
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                if (!recordDetailModal.classList.contains('hidden')) {
+                    document.body.style.height = window.visualViewport.height + 'px';
+                }
+            });
+            window.visualViewport.addEventListener('scroll', () => {
+                if (!recordDetailModal.classList.contains('hidden')) {
+                    // 键盘收起时重置body高度
+                    if (window.visualViewport.height >= window.innerHeight * 0.8) {
+                        document.body.style.height = '';
+                        window.scrollTo(0, 0);
+                    }
+                }
+            });
+        }
+
     </script>
 </body>
 </html>
