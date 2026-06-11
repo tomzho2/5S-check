@@ -778,7 +778,7 @@
         let deptList = [];
         let recordList = [];
         let syncTimer = null;
-        const SYNC_INTERVAL = 10000;
+        const SYNC_INTERVAL = 5000;
 
         // ==================== 状态码转换 ====================
         function getStatusName(code) {
@@ -861,7 +861,7 @@
             let q = sb.from('check_records').select('*').order('created_at', { ascending: false });
             if (status) q = q.eq('status', getStatusCode(status));
             const { data, error } = await q;
-            if (error) return;
+            if (error) { console.error('loadRecords error:', error); return; }
             recordList = (data || []).map(r => ({
                 id: r.id, dept: r.department || '', dutyUser: r.duty_name || '',
                 checker: r.inspector_name || '', date: r.check_date ? r.check_date.split('T')[0] : '',
@@ -869,7 +869,8 @@
                 status: getStatusName(r.status), createdAt: r.created_at, area: r.area,
                 notes: r.notes, createdBy: r.created_by
             }));
-            if (duty) recordList = recordList.filter(r => r.duty_name === duty);
+            if (duty) recordList = recordList.filter(r => r.dutyUser === duty);
+            console.log('loadRecords done, count:', recordList.length);
         }
 
         // ==================== 开始同步轮询 ====================
@@ -1190,9 +1191,8 @@
             mainPage.classList.remove('hidden');
             await loadDepts(); await loadUsers();
             renderErrorDutyOptions();
-            await loadRecords(filterDuty.value, filterStatus.value);
             renderDeptSelect(); bindDeptToDutyUser();
-            renderRecord(); startSync();
+            await renderRecord(); startSync();
         }
 
         logoutBtn.onclick = doLogout;
@@ -1588,20 +1588,29 @@
         }
 
         // ==================== 记录渲染 ====================
-        // 轻量级刷新：仅更新表格状态文字，不重新绑定事件（用于轮询）
+        // 轻量级刷新：检测数据变化后智能更新表格（用于轮询）
         function renderRecordTableOnly() {
+            const currentRows = recordTable.rows.length;
+            const dataCount = recordList.length;
+            
+            // 行数不一致时需要完整重渲染
+            if (currentRows !== dataCount) {
+                renderRecord();
+                return;
+            }
+            
+            // 行数一致时仅更新状态文字和操作按钮
             recordList.forEach((r, idx) => {
                 const tr = recordTable.rows[idx];
-                if (tr) {
-                    const statusCell = tr.cells[4];
-                    if (statusCell) {
-                        let st = r.status;
-                        if (st === '待整改') st = '<span class="text-red-500 font-bold">待整改</span>';
-                        else if (st === '待确认') st = '<span class="text-orange-500 font-bold">待确认</span>';
-                        else if (st === '已整改') st = '<span class="text-green-500 font-bold">已整改</span>';
-                        else if (st === '归档') st = '<span class="text-gray-500 font-bold">已归档</span>';
-                        statusCell.innerHTML = st;
-                    }
+                if (!tr) return;
+                const statusCell = tr.cells[4];
+                if (statusCell) {
+                    let st = r.status;
+                    if (st === '待整改') st = '<span class="text-red-500 font-bold">待整改</span>';
+                    else if (st === '待确认') st = '<span class="text-orange-500 font-bold">待确认</span>';
+                    else if (st === '已整改') st = '<span class="text-green-500 font-bold">已整改</span>';
+                    else if (st === '归档') st = '<span class="text-gray-500 font-bold">已归档</span>';
+                    statusCell.innerHTML = st;
                 }
             });
         }
@@ -1690,10 +1699,8 @@
                         mainPage.classList.remove('hidden');
                         await loadDepts(); await loadUsers();
                         renderErrorDutyOptions();
-                        await loadRecords('', '');
-                        setPermission(currentUser.role);
                         renderDeptSelect(); bindDeptToDutyUser();
-                        renderRecord(); startSync();
+                        await renderRecord(); startSync();
                     }
                 } catch (e) { /* 网络不通 */ }
             }
