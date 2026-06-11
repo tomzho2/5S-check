@@ -1401,7 +1401,7 @@
                                 <label class="form-label mt-2">整改照片</label>
                                 <input type="file" class="fix-img-input form-input" accept="image/*" multiple>
                                 <div class="fix-img-preview img-box mt-2"></div>
-                                <button class="btn bg-green-600 text-white submit-fix-btn mt-2">提交整改</button>
+                                <button type="button" class="btn bg-green-600 text-white submit-fix-btn mt-2">提交整改</button>
                             </div>`;
                     }
                     // 检查人/管理员且状态为待确认：显示确认/退回按钮
@@ -1722,18 +1722,20 @@
 
         // ==================== 移动端键盘/弹窗适配 ====================
         // 输入框失焦（键盘收起）时修复弹窗位置
-        document.addEventListener('blur', function(e) {
+        document.addEventListener('focusout', function(e) {
             if ((e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') && !recordDetailModal.classList.contains('hidden')) {
+                // 如果焦点转移到了按钮上，不做任何处理，避免打断点击事件
+                const newFocus = e.relatedTarget || document.activeElement;
+                if (newFocus && (newFocus.closest('.submit-fix-btn') || newFocus.closest('.confirm-fix-btn') ||
+                    newFocus.closest('.reject-fix-btn') || newFocus.closest('.archive-btn'))) {
+                    return;
+                }
+                // 延迟处理，确保点击事件先完成
                 setTimeout(() => {
-                    const mc = recordDetailModal.querySelector('.modal-content');
-                    if (mc) {
-                        // 延迟等待键盘完全收起后恢复滚动
+                    if (!recordDetailModal.classList.contains('hidden')) {
                         window.scrollTo(0, 0);
-                        // 确保modal内容可见
-                        recordDetailModal.style.overflow = 'auto';
-                        recordDetailModal.scrollTop = 0;
                     }
-                }, 100);
+                }, 200);
             }
         }, true);
 
