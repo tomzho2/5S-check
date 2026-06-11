@@ -1485,6 +1485,7 @@
                     e.stopPropagation();
                     // 防止重复点击
                     if (this.disabled || this.dataset.submitting === '1') return;
+                    let recForUpdate = null;
                     try {
                         this.disabled = true;
                         this.dataset.submitting = '1';
@@ -1493,32 +1494,78 @@
                         if (!form) { alert('未找到整改表单，请刷新页面重试'); this.resetBtn(); return; }
                         const rid = parseInt(form.dataset.recordId);
                         const itemType = form.dataset.item;
-                        const rec = recordList.find(r => r.id === rid);
-                        if (!rec) { alert('未找到记录（ID:' + rid + '），请刷新页面重试'); this.resetBtn(); return; }
-                        const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
-                        const detailItem = Array.isArray(items) ? items.find(d => d.itemType === itemType) : null;
-                        if (!detailItem) { alert('未找到检查项信息（类型:' + itemType + '），请刷新页面或联系管理员'); this.resetBtn(); return; }
-                        if (!detailItem.errorInfo) { alert('该检查项无异常信息，无需整改'); this.resetBtn(); return; }
+
+                        // 先从数据库获取最新记录，避免使用过期的内存数据
+                        const { data: latestRec, error: fetchErr } = await sb.from('check_records').select('*').eq('id', rid).single();
+                        if (fetchErr || !latestRec) {
+                            alert('获取最新记录失败，请刷新页面重试：' + (fetchErr?.message || '记录不存在'));
+                            this.resetBtn(); return;
+                        }
+                        recForUpdate = latestRec;
+
+                        // 解析最新数据的 details
+                        const rawDetails = latestRec.details || {};
+                        const items = rawDetails.items || (Array.isArray(rawDetails) ? rawDetails : []);
+                        // 兼容：如果 details 不是 { items: [...] } 格式
+                        const effectiveItems = Array.isArray(items) ? items : [];
+                        if (effectiveItems.length === 0 && !rawDetails.items) {
+                            // 尝试直接使用 rawDetails（兼容旧格式）
+                            const fallbackItems = [];
+                            for (const key in rawDetails) {
+                                if (typeof rawDetails[key] === 'object' && rawDetails[key].itemType) {
+                                    fallbackItems.push(rawDetails[key]);
+                                }
+                            }
+                            if (fallbackItems.length > 0) {
+                                items = fallbackItems; // 直接用 items 变量（外部作用域）
+                            }
+                        }
+
+                        const detailItem = effectiveItems.find(d => d.itemType === itemType);
+                        if (!detailItem || !detailItem.errorInfo) {
+                            alert('该检查项无异常信息，无需整改（或数据格式异常）');
+                            this.resetBtn(); return;
+                        }
+
                         const plan = form.querySelector('.fix-plan').value.trim();
                         if (!plan) { alert('请输入整改方案！'); this.resetBtn(); return; }
+
                         const imgs = [];
                         form.querySelectorAll('.fix-img-preview img').forEach(img => imgs.push(img.src));
+
+                        // 构建更新数据（基于最新数据库数据）
                         detailItem.errorInfo.fixPlan = plan;
                         detailItem.errorInfo.fixImgs = imgs;
                         detailItem.errorInfo.fixSubmitAt = new Date().toLocaleString();
                         detailItem.errorInfo.status = '待确认';
-                        const hasOngoing = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '进行中');
-                        const hasPending = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '待确认');
+
+                        // 计算新状态
+                        const hasOngoing = effectiveItems.some(d => d.isError && d.errorInfo && d.errorInfo.status === '进行中');
+                        const hasPending = effectiveItems.some(d => d.isError && d.errorInfo && d.errorInfo.status === '待确认');
                         const newStatus = hasOngoing ? 0 : (hasPending ? 1 : 2);
-                        await sb.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
+
+                        // 更新数据库
+                        const { error: updateErr } = await sb.from('check_records')
+                            .update({ details: { items: effectiveItems }, status: newStatus })
+                            .eq('id', rid);
+                        if (updateErr) {
+                            throw new Error('数据库更新失败：' + updateErr.message);
+                        }
+
                         alert('整改提交成功，等待检查人确认');
+
+                        // 重新加载数据并刷新UI
                         await loadRecords(filterDuty.value, filterStatus.value);
                         const updated = recordList.find(r => r.id === rid);
                         if (updated) showRecordDetail(updated, showActions);
+                        else {
+                            // 如果找不到（可能被过滤掉了），关闭弹窗并刷新列表
+                            closeModal(recordDetailModal);
+                        }
                         renderRecord();
                     } catch (err) {
                         alert('操作失败：' + err.message);
-                        console.error('提交整改出错:', err);
+                        console.error('提交整改出错:', err, recForUpdate);
                     }
                     // 恢复按钮状态（如果按钮还在DOM中）
                     if (this.resetBtn) this.resetBtn();
