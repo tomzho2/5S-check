@@ -107,7 +107,11 @@
             font-weight: 500;
             border: none;
             cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
             transition: background-color 0.2s;
+            position: relative;
+            z-index: 10;
         }
         .btn-primary {
             background-color: #2563eb;
@@ -1430,21 +1434,32 @@
 
             // 提交整改
             detailContent.querySelectorAll('.submit-fix-btn').forEach(btn => {
-                btn.onclick = async function () {
+                btn.onclick = async function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('=== 提交整改按钮被点击 ===');
                     try {
                         const form = this.closest('.fix-form');
+                        console.log('form元素:', form);
+                        if (!form) { alert('未找到整改表单，请刷新页面重试'); return; }
                         const rid = parseInt(form.dataset.recordId);
                         const itemType = form.dataset.item;
+                        console.log('记录ID:', rid, '项目类型:', itemType);
                         const rec = recordList.find(r => r.id === rid);
-                        if (!rec) { alert('未找到记录，请刷新页面重试'); return; }
+                        console.log('找到记录:', rec ? '是' : '否', 'recordList长度:', recordList.length);
+                        if (!rec) { alert('未找到记录（ID:' + rid + '），请刷新页面重试'); return; }
                         const items = rec.detail && rec.detail.items ? rec.detail.items : rec.detail;
+                        console.log('items:', items, '是否数组:', Array.isArray(items));
                         const detailItem = Array.isArray(items) ? items.find(d => d.itemType === itemType) : null;
-                        if (!detailItem) { alert('未找到检查项信息，请刷新页面或联系管理员'); return; }
+                        console.log('detailItem:', detailItem ? '找到' : '未找到');
+                        if (!detailItem) { alert('未找到检查项信息（类型:' + itemType + '），请刷新页面或联系管理员'); return; }
                         if (!detailItem.errorInfo) { alert('该检查项无异常信息，无需整改'); return; }
                         const plan = form.querySelector('.fix-plan').value.trim();
-                        if (!plan) return alert('请输入整改方案！');
+                        console.log('整改方案:', plan);
+                        if (!plan) { alert('请输入整改方案！'); return; }
                         const imgs = [];
                         form.querySelectorAll('.fix-img-preview img').forEach(img => imgs.push(img.src));
+                        console.log('整改照片数:', imgs.length);
                         detailItem.errorInfo.fixPlan = plan;
                         detailItem.errorInfo.fixImgs = imgs;
                         detailItem.errorInfo.fixSubmitAt = new Date().toLocaleString();
@@ -1452,6 +1467,7 @@
                         const hasOngoing = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '进行中');
                         const hasPending = items.some(d => d.isError && d.errorInfo && d.errorInfo.status === '待确认');
                         const newStatus = hasOngoing ? 0 : (hasPending ? 1 : 2);
+                        console.log('正在更新数据库...');
                         await sb.from('check_records').update({ details: { items }, status: newStatus }).eq('id', rid);
                         alert('整改提交成功，等待检查人确认');
                         await loadRecords(filterDuty.value, filterStatus.value);
