@@ -858,8 +858,11 @@
 
         // ==================== 数据加载 ====================
         async function loadDepts() {
-            const { data, error } = await sb.from('departments').select('*').order('id');
-            if (!error) deptList = data;
+            try {
+                const { data, error } = await sb.from('departments').select('*').order('id');
+                if (!error && Array.isArray(data)) deptList = data;
+                else { console.error('loadDepts error:', error); deptList = deptList || []; }
+            } catch (e) { console.error('loadDepts exception:', e); deptList = deptList || []; }
         }
         async function loadUsers() {
             const { data, error } = await sb.from('users').select('*').order('id');
@@ -1216,6 +1219,8 @@
             loginPage.classList.add('hidden');
             mainPage.classList.remove('hidden');
             await loadDepts(); await loadUsers();
+            // 首次加载可能因网络原因失败，若 deptList 为空则重试一次
+            if (deptList.length === 0) { await loadDepts(); }
             renderErrorDutyOptions();
             renderDeptSelect(); bindDeptToDutyUser();
             await renderRecord(); startSync();
@@ -1828,6 +1833,7 @@
                         loginPage.classList.add('hidden');
                         mainPage.classList.remove('hidden');
                         await loadDepts(); await loadUsers();
+                        if (deptList.length === 0) { await loadDepts(); }
                         renderErrorDutyOptions();
                         renderDeptSelect(); bindDeptToDutyUser();
                         await renderRecord(); startSync();
