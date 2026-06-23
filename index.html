@@ -503,7 +503,7 @@
                     </div>
                     <div>
                         <label class="form-label">检查日期</label>
-                        <input type="date" id="checkDate" class="form-input">
+                        <input type="date" id="checkDate" class="form-input" readonly>
                     </div>
                 </div>
                 <div class="mt-4 flex justify-center">
@@ -1255,7 +1255,7 @@
                 if (recBtn) { recBtn.classList.add('active'); recBtn.style.backgroundColor = 'white'; recBtn.style.color = '#2563eb'; }
                 filterDutyWrap.classList.add('hidden');
                 inputs.forEach(list => list.forEach(el => el.disabled = true));
-                deptSelect.disabled = dutyUserSelect.disabled = checkUser.disabled = checkDate.disabled = true;
+                deptSelect.disabled = dutyUserSelect.disabled = checkUser.disabled = true;
                 startCheck.disabled = submitCheck.disabled = resetAll.disabled = true;
                 checkArea.classList.add('hidden');
             } else {
@@ -1264,7 +1264,7 @@
                 recordPage.classList.add('hidden');
                 filterDutyWrap.classList.remove('hidden');
                 inputs.forEach(list => list.forEach(el => el.disabled = false));
-                deptSelect.disabled = dutyUserSelect.disabled = checkUser.disabled = checkDate.disabled = false;
+                deptSelect.disabled = dutyUserSelect.disabled = checkUser.disabled = false;
                 startCheck.disabled = submitCheck.disabled = resetAll.disabled = false;
                 filterDuty.innerHTML = '<option value="">全部人员</option>';
                 userList.filter(u => getUserRoles(u).includes('duty')).forEach(u => {
