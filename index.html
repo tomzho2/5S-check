@@ -1218,6 +1218,8 @@
             // 权限设置完成后才显示主页面
             loginPage.classList.add('hidden');
             mainPage.classList.remove('hidden');
+            // 自动抓取当前日期
+            checkDate.valueAsDate = new Date();
             await loadDepts(); await loadUsers();
             // 首次加载可能因网络原因失败，若 deptList 为空则重试一次
             if (deptList.length === 0) { await loadDepts(); }
@@ -1418,6 +1420,7 @@
             document.querySelectorAll('.error-desc').forEach(el => el.value = '');
             document.querySelectorAll('.score-tip').forEach(el => el.innerText = '当前分数：20');
             checkArea.classList.add('hidden');
+            checkDate.valueAsDate = new Date();
         }
 
         submitCheck.onclick = async function () {
@@ -1832,6 +1835,7 @@
                         setPermission(currentUser.role);
                         loginPage.classList.add('hidden');
                         mainPage.classList.remove('hidden');
+                        checkDate.valueAsDate = new Date();
                         await loadDepts(); await loadUsers();
                         if (deptList.length === 0) { await loadDepts(); }
                         renderErrorDutyOptions();
