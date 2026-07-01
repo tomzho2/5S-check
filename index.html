@@ -1129,12 +1129,13 @@
             if (!acc || !pwd) return alert('账号、密码不能为空');
             if (!roles) return alert('请至少选择一个角色');
             try {
-                await sb.from('users').insert({ username: acc, real_name: name, password: pwd, role: roles, department: dept });
+                const { data, error } = await sb.from('users').insert({ username: acc, real_name: name, password: pwd, role: roles, department: dept }).select();
+                if (error) throw new Error(error.message || '新增失败：' + JSON.stringify(error));
                 newAccount.value = ''; newName.value = '';
                 setCheckedValues('.new-role-cb', ''); setCheckedValues('.new-dept-cb', '');
                 alert('新增人员成功');
                 await loadUsers(); renderUserTable();
-            } catch (err) { alert(err.message); }
+            } catch (err) { console.error('addUserBtn error:', err); alert('保存失败：' + (err.message || err)); }
         };
 
         userTableBody.addEventListener('click', async function (e) {
@@ -1168,11 +1169,12 @@
             if (!acc || !pwd) return alert('账号、密码不能为空');
             if (!role) return alert('请至少选择一个角色');
             try {
-                await sb.from('users').update({ username: acc, real_name: name, password: pwd, role, department: dept }).eq('id', id);
+                const { data, error } = await sb.from('users').update({ username: acc, real_name: name, password: pwd, role: role, department: dept }).eq('id', id).select();
+                if (error) throw new Error(error.message || '修改失败：' + JSON.stringify(error));
                 closeModal(editUserModal);
                 alert('人员信息修改成功');
                 await loadUsers(); renderUserTable();
-            } catch (err) { alert(err.message); }
+            } catch (err) { console.error('saveEditUser error:', err); alert('保存失败：' + (err.message || err)); }
         };
 
         loginBtn.onclick = async function() {
