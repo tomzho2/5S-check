@@ -883,7 +883,7 @@
                 id: u.id, account: u.username, name: u.real_name, pwd: u.password,
                 role: u.role, dept: u.department, roles: [u.role],
                 depts: u.department ? [u.department] : [],
-                roleName: u.role==='admin'?'超级管理员':(u.role.includes('checker')||u.role==='checker')?'检查人':'责任人'
+                roleName: u.role==='admin'?'超级管理员':(u.role&&u.role.includes('checker')?'检查人':'责任人')
             }));
         }
         async function loadRecords(duty, status) {
@@ -1200,7 +1200,7 @@
                     id: data.id, account: data.username, name: data.real_name, pwd: data.password,
                     role: data.role, dept: data.department, roles: [data.role],
                     depts: data.department ? [data.department] : [],
-                    roleName: data.role==='admin'?'超级管理员':(data.role.includes('checker')||data.role==='checker')?'检查人':'责任人')
+                    roleName: data.role==='admin'?'超级管理员':(data.role&&data.role.includes('checker')?'检查人':'责任人')
                 };
                 sessionStorage.setItem('5s_account', currentUser.account);
                 sessionStorage.setItem('5s_pwd', currentUser.pwd);
@@ -1837,7 +1837,7 @@
                             id: data.id, account: data.username, name: data.real_name, pwd: data.password,
                             role: data.role, dept: data.department, roles: [data.role],
                             depts: data.department ? [data.department] : [],
-                            roleName: data.role==='admin'?'超级管理员':(data.role.includes('checker')||data.role==='checker')?'检查人':'责任人'
+                            roleName: data.role==='admin'?'超级管理员':(data.role&&data.role.includes('checker')?'检查人':'责任人')
                         };
                         const displayName = currentUser.name || currentUser.account;
                         const roleDisplay = currentUser.roleName || (currentUser.roles ? currentUser.roles.join('、') : '');
