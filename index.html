@@ -109,6 +109,18 @@
             background-size: 12px 8px;
             cursor: pointer;
         }
+        .dept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 0.5rem;
+        }
+        .dept-grid label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
         .btn {
             display: inline-flex;
             align-items: center;
@@ -378,7 +390,7 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="form-label">所属部门（可多选）</label>
-                    <div class="flex flex-wrap gap-3 mt-1" id="newDeptGroup"></div>
+                    <div class="dept-grid mt-1" id="newDeptGroup"></div>
                 </div>
                     </div>
                     <button id="addUserBtn" class="btn btn-primary btn-full">新增账号</button>
@@ -428,7 +440,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">所属部门（可多选）</label>
-                <div class="flex flex-wrap gap-3 mt-1" id="editDeptGroup"></div>
+                <div class="dept-grid mt-1" id="editDeptGroup"></div>
             </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button id="cancelEditUser" class="btn bg-gray-500 text-white">取消</button>
